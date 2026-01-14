@@ -63,9 +63,14 @@
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         overflow: hidden;
+
         display: flex;
         flex-direction: column;
-        min-height: min(740px, calc(100vh - 48px));
+
+        height: calc(100vh - 48px);
+        max-height: calc(100vh - 48px);
+        min-height: 0;
+
         position: relative;
       }
 
@@ -151,6 +156,7 @@
         flex-direction: column;
         gap: 10px;
         scroll-behavior: smooth;
+        min-height: 0;
       }
 
       .msgRow {
