@@ -45,183 +45,29 @@
             rgba(155, 81, 224, 0) 60%
           ),
           var(--bg);
-        overflow-x: hidden;
+        overflow: hidden;
       }
+
       .wrap {
         min-height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 28px 16px;
+        padding: 24px 14px;
       }
-      .app {
-        width: min(980px, 100%);
-        display: grid;
-        grid-template-columns: 340px 1fr;
-        gap: 16px;
-      }
-      @media (max-width: 900px) {
-        .app {
-          grid-template-columns: 1fr;
-        }
-      }
+
       .panel {
+        width: min(920px, 100%);
         background: var(--card);
         border: 1px solid var(--line);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         overflow: hidden;
-      }
-      .side {
         display: flex;
         flex-direction: column;
-        min-height: 560px;
-      }
-      .hero {
-        padding: 18px 18px 16px;
-        border-bottom: 1px solid var(--line);
-        background: linear-gradient(
-            180deg,
-            rgba(45, 91, 255, 0.07),
-            rgba(45, 91, 255, 0) 65%
-          ),
-          #fff;
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .logo {
-        width: 44px;
-        height: 44px;
-        border-radius: 16px;
-        background: linear-gradient(
-          135deg,
-          rgba(45, 91, 255, 0.95),
-          rgba(0, 225, 255, 0.85)
-        );
-        box-shadow: 0 12px 30px rgba(45, 91, 255, 0.22);
-        display: grid;
-        place-items: center;
-        color: #fff;
-        font-weight: 900;
-        letter-spacing: -0.04em;
-      }
-      .brand h1 {
-        margin: 0;
-        font-size: 16px;
-        letter-spacing: -0.03em;
-      }
-      .brand p {
-        margin: 2px 0 0;
-        font-size: 12.5px;
-        color: var(--muted);
-        line-height: 1.35;
+        min-height: min(740px, calc(100vh - 48px));
       }
 
-      .profile {
-        margin-top: 14px;
-        padding: 12px 12px;
-        border-radius: 18px;
-        border: 1px dashed rgba(45, 91, 255, 0.25);
-        background: rgba(45, 91, 255, 0.04);
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-      .avatar {
-        width: 46px;
-        height: 46px;
-        border-radius: 18px;
-        display: grid;
-        place-items: center;
-        background: #fff;
-        border: 1px solid var(--line);
-        box-shadow: var(--shadow-soft);
-        overflow: hidden;
-        flex: 0 0 auto;
-      }
-      .avatar svg {
-        width: 46px;
-        height: 46px;
-        display: block;
-      }
-      .profile .meta {
-        min-width: 0;
-        flex: 1;
-      }
-      .profile .meta .title {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      .badge {
-        font-size: 11px;
-        padding: 4px 8px;
-        border-radius: 999px;
-        border: 1px solid rgba(45, 91, 255, 0.2);
-        background: rgba(45, 91, 255, 0.08);
-        color: rgba(45, 91, 255, 0.95);
-        font-weight: 700;
-      }
-      .profile input {
-        width: 100%;
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 10px 12px;
-        font-size: 13px;
-        outline: none;
-        margin-top: 8px;
-        background: #fff;
-      }
-      .profile input:focus {
-        border-color: rgba(45, 91, 255, 0.55);
-        box-shadow: 0 0 0 4px rgba(45, 91, 255, 0.1);
-      }
-
-      .tips {
-        padding: 14px 18px 18px;
-        display: grid;
-        gap: 10px;
-      }
-      .tip {
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        padding: 12px 12px;
-        background: #fff;
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-      }
-      .tip .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        background: rgba(45, 91, 255, 0.9);
-        box-shadow: 0 0 0 4px rgba(45, 91, 255, 0.12);
-        margin-top: 4px;
-        flex: 0 0 auto;
-      }
-      .tip b {
-        display: block;
-        font-size: 13px;
-        letter-spacing: -0.02em;
-        margin-bottom: 2px;
-      }
-      .tip span {
-        display: block;
-        font-size: 12.5px;
-        color: var(--muted);
-        line-height: 1.45;
-      }
-
-      .chat {
-        display: flex;
-        flex-direction: column;
-        min-height: 560px;
-      }
       .chatHeader {
         padding: 16px 18px;
         border-bottom: 1px solid var(--line);
@@ -232,28 +78,14 @@
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(8px);
       }
-      .chatHeader .left {
+
+      .left {
         display: flex;
         align-items: center;
         gap: 12px;
         min-width: 0;
       }
-      .roomTitle {
-        margin: 0;
-        font-size: 15px;
-        letter-spacing: -0.03em;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .status {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--muted);
-        font-size: 12.5px;
-        white-space: nowrap;
-      }
+
       .pill {
         display: flex;
         gap: 6px;
@@ -263,9 +95,10 @@
         border: 1px solid var(--line);
         background: #fff;
         box-shadow: var(--shadow-soft);
-        font-weight: 700;
+        font-weight: 800;
         color: var(--text);
         font-size: 12px;
+        white-space: nowrap;
       }
       .led {
         width: 8px;
@@ -280,6 +113,33 @@
       .led.bad {
         background: #ef4444;
         box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+      }
+
+      .roomTitle {
+        margin: 0;
+        font-size: 15px;
+        letter-spacing: -0.03em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 12.5px;
+        white-space: nowrap;
+      }
+      .kbd {
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #fff;
+        box-shadow: var(--shadow-soft);
+        color: var(--text);
       }
 
       .messages {
@@ -297,9 +157,11 @@
         align-items: flex-end;
         max-width: 100%;
       }
+
       .msgRow.me {
         justify-content: flex-end;
       }
+
       .msgRow.me .bubble {
         background: linear-gradient(
           135deg,
@@ -333,7 +195,7 @@
 
       .content {
         min-width: 0;
-        max-width: min(560px, 78%);
+        max-width: min(600px, 78%);
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -394,7 +256,7 @@
         border: 0;
         border-radius: 16px;
         padding: 10px 12px;
-        font-weight: 800;
+        font-weight: 900;
         font-size: 13px;
         cursor: pointer;
         background: var(--primary);
@@ -405,6 +267,7 @@
         align-items: center;
         transition: transform 0.06s ease, filter 0.12s ease;
         user-select: none;
+        white-space: nowrap;
       }
       .btn:active {
         transform: translateY(1px);
@@ -423,15 +286,7 @@
         gap: 10px;
         color: var(--muted);
         font-size: 12px;
-      }
-      .kbd {
-        font-weight: 800;
-        padding: 2px 7px;
-        border-radius: 10px;
-        border: 1px solid var(--line);
-        background: #fff;
-        box-shadow: var(--shadow-soft);
-        color: var(--text);
+        flex-wrap: wrap;
       }
 
       /* Nickname Overlay */
@@ -454,13 +309,36 @@
         box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
         border: 1px solid rgba(230, 234, 245, 0.9);
       }
+      #nickTop {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      #nickAvatar {
+        width: 46px;
+        height: 46px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: #fff;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        flex: 0 0 auto;
+      }
+      #nickAvatar svg {
+        width: 46px;
+        height: 46px;
+        display: block;
+      }
       #nickCard h2 {
-        margin: 0 0 8px;
+        margin: 0;
         letter-spacing: -0.03em;
         font-size: 18px;
       }
       #nickCard p {
-        margin: 0 0 18px;
+        margin: 8px 0 18px;
         color: var(--muted);
         font-size: 13.5px;
         line-height: 1.4;
@@ -485,7 +363,7 @@
         padding: 12px;
         background: var(--primary);
         color: #fff;
-        font-weight: 800;
+        font-weight: 900;
         font-size: 14px;
         cursor: pointer;
         box-shadow: 0 14px 30px rgba(45, 91, 255, 0.22);
@@ -493,119 +371,89 @@
       #nickConfirm:active {
         transform: translateY(1px);
       }
+      .subAction {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .linkBtn {
+        border: 0;
+        background: transparent;
+        color: rgba(45, 91, 255, 0.95);
+        font-weight: 900;
+        cursor: pointer;
+        padding: 0;
+      }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <div class="app">
-        <!-- LEFT -->
-        <aside class="panel side">
-          <div class="hero">
-            <div class="brand">
-              <div class="logo">C</div>
-              <div>
-                <h1>Chat Demo</h1>
-                <p>
-                  Starlette + WebSocket + Redis broadcast<br />기능은 그대로,
-                  UI만 “토스풍”으로.
-                </p>
-              </div>
+      <main class="panel">
+        <div class="chatHeader">
+          <div class="left">
+            <div class="pill" title="WebSocket 상태">
+              <span class="led bad" id="wsLed"></span>
+              <span id="wsText">닉네임 필요</span>
             </div>
-
-            <div class="profile">
-              <div class="avatar" id="myAvatar"></div>
-              <div class="meta">
-                <div class="title">
-                  <div style="font-weight: 900; letter-spacing: -0.03em">
-                    내 프로필
-                  </div>
-                  <span class="badge">캐릭터</span>
-                </div>
-                <input
-                  id="nickname"
-                  placeholder="닉네임 (로컬 표시용)"
-                  maxlength="16"
-                />
-              </div>
-            </div>
+            <h2 class="roomTitle" id="titleText">실시간 채팅</h2>
           </div>
-
-          <div class="tips">
-            <div class="tip">
-              <div class="dot"></div>
-              <div>
-                <b>중복 전송 해결</b>
-                <span>내 메시지는 “서버에서 돌아올 때”만 1번 렌더링.</span>
-              </div>
-            </div>
-            <div class="tip">
-              <div class="dot"></div>
-              <div>
-                <b>닉네임 진입 화면</b>
-                <span>처음 접속 시 닉네임 정하고 입장.</span>
-              </div>
-            </div>
-            <div class="tip">
-              <div class="dot"></div>
-              <div>
-                <b>캐릭터 아바타</b>
-                <span>상대 메시지엔 랜덤 캐릭터 프로필.</span>
-              </div>
-            </div>
+          <div class="status">
+            <span id="nickBadge" class="kbd">-</span>
+            <span>채널</span>
+            <span class="kbd">demo</span>
           </div>
-        </aside>
+        </div>
 
-        <!-- RIGHT -->
-        <main class="panel chat">
-          <div class="chatHeader">
-            <div class="left">
-              <div class="pill" title="WebSocket 상태">
-                <span class="led bad" id="wsLed"></span>
-                <span id="wsText">연결 대기</span>
-              </div>
-              <h2 class="roomTitle">실시간 채팅</h2>
-            </div>
-            <div class="status">
-              <span>채널</span>
-              <span class="kbd">demo</span>
-            </div>
+        <div class="messages" id="messages" aria-live="polite"></div>
+
+        <div class="composer">
+          <div class="bar">
+            <textarea
+              id="input"
+              placeholder="메시지 입력… (Enter: 전송 / Shift+Enter: 줄바꿈)"
+            ></textarea>
+            <button class="btn" id="sendBtn" type="button" disabled>
+              <span>전송</span>
+              <span aria-hidden="true">➜</span>
+            </button>
           </div>
-
-          <div class="messages" id="messages" aria-live="polite"></div>
-
-          <div class="composer">
-            <div class="bar">
-              <textarea
-                id="input"
-                placeholder="메시지 입력… (Enter: 전송 / Shift+Enter: 줄바꿈)"
-              ></textarea>
-              <button class="btn" id="sendBtn" type="button" disabled>
-                <span>전송</span>
-                <span aria-hidden="true">➜</span>
-              </button>
-            </div>
-            <div class="hint">
-              <span
-                >내 메시지 <span class="kbd">오른쪽</span> / 상대
-                <span class="kbd">왼쪽</span></span
-              >
-              <span>연결은 닉네임 입력 후 시작.</span>
-            </div>
+          <div class="hint">
+            <span>내 메시지 오른쪽 / 상대 왼쪽</span>
+            <span>닉네임은 첫 입장 때만 설정</span>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
 
-    <!-- Nickname Overlay -->
+    <!-- Nickname Overlay (first entry) -->
     <div id="nickOverlay">
       <div id="nickCard">
-        <h2>닉네임을 입력해주세요</h2>
+        <div id="nickTop">
+          <div id="nickAvatar"></div>
+          <div>
+            <h2>닉네임을 정하고 입장</h2>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 4px">
+              캐릭터는 랜덤 지급
+            </div>
+          </div>
+        </div>
         <p>
-          채팅에서 표시될 이름이에요. 서버에는 저장되지 않고 브라우저에만
-          저장돼요.
+          이름은 채팅 화면에만 표시돼요. 서버에는 저장 안 되고 브라우저에만
+          저장됩니다.
         </p>
+
         <input id="nickInput" placeholder="예: 햄찌왕" maxlength="16" />
         <button id="nickConfirm">입장하기</button>
+
+        <div class="subAction">
+          <span>팁: Enter로 바로 입장</span>
+          <button class="linkBtn" id="regenAvatar" type="button">
+            캐릭터 다시 뽑기
+          </button>
+        </div>
       </div>
     </div>
 
@@ -675,20 +523,8 @@
 
       const seed = () => Math.random().toString(16).slice(2, 7);
 
-      // ====== Local keys ======
-      const myAvatarKey = "chat_demo_my_avatar";
-      const myAvatarSeedKey = "chat_demo_my_avatar_seed";
+      // ====== Local key (nickname only) ======
       const myNickKey = "chat_demo_nick";
-
-      // 내 아바타 고정(새로고침해도 유지)
-      const myAvatarIndex = Number(localStorage.getItem(myAvatarKey) ?? -1);
-      const myAvatarSeed = localStorage.getItem(myAvatarSeedKey) ?? seed();
-      const chosenIndex =
-        myAvatarIndex >= 0
-          ? myAvatarIndex
-          : Math.floor(Math.random() * avatarSvgs.length);
-      localStorage.setItem(myAvatarKey, String(chosenIndex));
-      localStorage.setItem(myAvatarSeedKey, myAvatarSeed);
 
       // DOM refs
       const wsLed = document.getElementById("wsLed");
@@ -696,20 +532,15 @@
       const messagesEl = document.getElementById("messages");
       const inputEl = document.getElementById("input");
       const sendBtn = document.getElementById("sendBtn");
-      const nicknameEl = document.getElementById("nickname");
-      const myAvatarEl = document.getElementById("myAvatar");
+      const nickBadge = document.getElementById("nickBadge");
+      const titleText = document.getElementById("titleText");
 
       // overlay refs
       const overlay = document.getElementById("nickOverlay");
       const nickInput = document.getElementById("nickInput");
       const nickConfirm = document.getElementById("nickConfirm");
-
-      // init avatar + nickname input (side)
-      myAvatarEl.innerHTML = avatarSvgs[chosenIndex](myAvatarSeed);
-      nicknameEl.value = localStorage.getItem(myNickKey) ?? "";
-      nicknameEl.addEventListener("input", () => {
-        localStorage.setItem(myNickKey, nicknameEl.value.trim());
-      });
+      const nickAvatar = document.getElementById("nickAvatar");
+      const regenAvatarBtn = document.getElementById("regenAvatar");
 
       // ====== utils ======
       function setWsState(ok, text) {
@@ -718,11 +549,9 @@
         wsText.textContent = text;
         sendBtn.disabled = !ok;
       }
-
       function scrollToBottom() {
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
-
       function escapeHtml(s) {
         return s.replace(
           /[&<>"']/g,
@@ -736,7 +565,6 @@
             }[m])
         );
       }
-
       function nowTime() {
         const d = new Date();
         const hh = String(d.getHours()).padStart(2, "0");
@@ -755,7 +583,7 @@
       };
 
       function addMessage({ text, me = false }) {
-        const nick = (nicknameEl.value || "나").trim();
+        const nick = (localStorage.getItem(myNickKey) || "나").trim();
         const time = nowTime();
         const safe = escapeHtml(text);
 
@@ -834,13 +662,12 @@
             return;
           }
 
-          // 나머지는 상대
           addMessage({ text, me: false });
         };
 
-        // 안내 메시지 1번
+        const nick = (localStorage.getItem(myNickKey) || "").trim();
         addMessage({
-          text: "닉네임 설정 끝났으면 이제 Enter로 전송하면 됨. (Shift+Enter는 줄바꿈)",
+          text: `${nick} 입장 완료. 이제 Enter로 전송하면 됨. (Shift+Enter 줄바꿈)`,
           me: false,
         });
       }
@@ -859,7 +686,7 @@
         inputEl.focus();
       }
 
-      sendBtn.addEventListener("click", send);
+      document.getElementById("sendBtn").addEventListener("click", send);
 
       inputEl.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -874,17 +701,32 @@
         inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
       });
 
-      // ====== Nickname overlay flow ======
+      // ====== Nickname overlay flow (first entry) ======
+      let myAvatarIdx = Math.floor(Math.random() * avatarSvgs.length);
+      let myAvatarSeed = seed();
+      function renderNickAvatar() {
+        nickAvatar.innerHTML = avatarSvgs[myAvatarIdx](myAvatarSeed);
+      }
+      renderNickAvatar();
+
+      regenAvatarBtn.addEventListener("click", () => {
+        myAvatarIdx = Math.floor(Math.random() * avatarSvgs.length);
+        myAvatarSeed = seed();
+        renderNickAvatar();
+      });
+
       function ensureNickname() {
         const saved = (localStorage.getItem(myNickKey) ?? "").trim();
         if (saved) {
           overlay.style.display = "none";
-          nicknameEl.value = saved;
+          nickBadge.textContent = saved;
+          titleText.textContent = "실시간 채팅";
           connect();
         } else {
           overlay.style.display = "flex";
           nickInput.value = "";
           nickInput.focus();
+          nickBadge.textContent = "-";
           setWsState(false, "닉네임 필요");
         }
       }
@@ -893,8 +735,8 @@
         const val = nickInput.value.trim();
         if (!val) return;
         localStorage.setItem(myNickKey, val);
-        nicknameEl.value = val;
         overlay.style.display = "none";
+        nickBadge.textContent = val;
         connect();
       });
 
