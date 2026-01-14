@@ -11,13 +11,11 @@
         --text: #0f172a;
         --muted: #64748b;
         --line: #e6eaf5;
-        --primary: #2d5bff; /* 토스 느낌: 선명한 블루 */
-        --primary-weak: #eaf0ff;
+        --primary: #2d5bff;
         --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
         --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
         --radius: 22px;
       }
-
       * {
         box-sizing: border-box;
       }
@@ -49,7 +47,6 @@
           var(--bg);
         overflow-x: hidden;
       }
-
       .wrap {
         min-height: 100%;
         display: flex;
@@ -57,20 +54,17 @@
         justify-content: center;
         padding: 28px 16px;
       }
-
       .app {
         width: min(980px, 100%);
         display: grid;
         grid-template-columns: 340px 1fr;
         gap: 16px;
       }
-
       @media (max-width: 900px) {
         .app {
           grid-template-columns: 1fr;
         }
       }
-
       .panel {
         background: var(--card);
         border: 1px solid var(--line);
@@ -78,13 +72,11 @@
         box-shadow: var(--shadow);
         overflow: hidden;
       }
-
       .side {
         display: flex;
         flex-direction: column;
         min-height: 560px;
       }
-
       .hero {
         padding: 18px 18px 16px;
         border-bottom: 1px solid var(--line);
@@ -95,13 +87,11 @@
           ),
           #fff;
       }
-
       .brand {
         display: flex;
         align-items: center;
         gap: 12px;
       }
-
       .logo {
         width: 44px;
         height: 44px;
@@ -118,7 +108,6 @@
         font-weight: 900;
         letter-spacing: -0.04em;
       }
-
       .brand h1 {
         margin: 0;
         font-size: 16px;
@@ -141,7 +130,6 @@
         gap: 12px;
         align-items: center;
       }
-
       .avatar {
         width: 46px;
         height: 46px;
@@ -154,13 +142,11 @@
         overflow: hidden;
         flex: 0 0 auto;
       }
-
       .avatar svg {
         width: 46px;
         height: 46px;
         display: block;
       }
-
       .profile .meta {
         min-width: 0;
         flex: 1;
@@ -236,7 +222,6 @@
         flex-direction: column;
         min-height: 560px;
       }
-
       .chatHeader {
         padding: 16px 18px;
         border-bottom: 1px solid var(--line);
@@ -247,7 +232,6 @@
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(8px);
       }
-
       .chatHeader .left {
         display: flex;
         align-items: center;
@@ -325,9 +309,6 @@
         color: #fff;
         border: 0;
         box-shadow: 0 12px 30px rgba(45, 91, 255, 0.2);
-      }
-      .msgRow.me .metaLine {
-        justify-content: flex-end;
       }
       .msgRow.me .avatarWrap {
         display: none;
@@ -452,6 +433,66 @@
         box-shadow: var(--shadow-soft);
         color: var(--text);
       }
+
+      /* Nickname Overlay */
+      #nickOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(6px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 16px;
+      }
+      #nickCard {
+        width: min(420px, 100%);
+        background: #fff;
+        border-radius: 22px;
+        padding: 26px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(230, 234, 245, 0.9);
+      }
+      #nickCard h2 {
+        margin: 0 0 8px;
+        letter-spacing: -0.03em;
+        font-size: 18px;
+      }
+      #nickCard p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 13.5px;
+        line-height: 1.4;
+      }
+      #nickInput {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        font-size: 14px;
+        outline: none;
+      }
+      #nickInput:focus {
+        border-color: rgba(45, 91, 255, 0.55);
+        box-shadow: 0 0 0 4px rgba(45, 91, 255, 0.1);
+      }
+      #nickConfirm {
+        margin-top: 16px;
+        width: 100%;
+        border: 0;
+        border-radius: 16px;
+        padding: 12px;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 800;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 14px 30px rgba(45, 91, 255, 0.22);
+      }
+      #nickConfirm:active {
+        transform: translateY(1px);
+      }
     </style>
   </head>
   <body>
@@ -465,8 +506,8 @@
               <div>
                 <h1>Chat Demo</h1>
                 <p>
-                  Starlette + WebSocket + Redis broadcast<br />깔끔하게만 해도
-                  “그럴듯”해진다.
+                  Starlette + WebSocket + Redis broadcast<br />기능은 그대로,
+                  UI만 “토스풍”으로.
                 </p>
               </div>
             </div>
@@ -482,7 +523,7 @@
                 </div>
                 <input
                   id="nickname"
-                  placeholder="닉네임 (로컬 표시용, 서버로 안 보냄)"
+                  placeholder="닉네임 (로컬 표시용)"
                   maxlength="16"
                 />
               </div>
@@ -493,28 +534,22 @@
             <div class="tip">
               <div class="dot"></div>
               <div>
-                <b>토스 느낌 UI</b>
-                <span>둥근 모서리 + 부드러운 그림자 + 선명한 블루 포인트.</span>
+                <b>중복 전송 해결</b>
+                <span>내 메시지는 “서버에서 돌아올 때”만 1번 렌더링.</span>
               </div>
             </div>
             <div class="tip">
               <div class="dot"></div>
               <div>
-                <b>중복 메시지 제거</b>
-                <span
-                  >내가 보낸 메시지는 즉시 표시하고, 서버 에코는 짧은 시간 내
-                  동일 텍스트면 숨김.</span
-                >
+                <b>닉네임 진입 화면</b>
+                <span>처음 접속 시 닉네임 정하고 입장.</span>
               </div>
             </div>
             <div class="tip">
               <div class="dot"></div>
               <div>
                 <b>캐릭터 아바타</b>
-                <span
-                  >말하는 사람마다 랜덤 캐릭터. (서버가 sender 정보를 안 줘서
-                  프론트에서만 처리)</span
-                >
+                <span>상대 메시지엔 랜덤 캐릭터 프로필.</span>
               </div>
             </div>
           </div>
@@ -526,7 +561,7 @@
             <div class="left">
               <div class="pill" title="WebSocket 상태">
                 <span class="led bad" id="wsLed"></span>
-                <span id="wsText">연결 중…</span>
+                <span id="wsText">연결 대기</span>
               </div>
               <h2 class="roomTitle">실시간 채팅</h2>
             </div>
@@ -544,20 +579,33 @@
                 id="input"
                 placeholder="메시지 입력… (Enter: 전송 / Shift+Enter: 줄바꿈)"
               ></textarea>
-              <button class="btn" id="sendBtn" type="button">
+              <button class="btn" id="sendBtn" type="button" disabled>
                 <span>전송</span>
                 <span aria-hidden="true">➜</span>
               </button>
             </div>
             <div class="hint">
               <span
-                >내 메시지는 <span class="kbd">오른쪽</span> / 다른 메시지는
+                >내 메시지 <span class="kbd">오른쪽</span> / 상대
                 <span class="kbd">왼쪽</span></span
               >
-              <span>연결 안 되면? EB에서 Procfile부터 봐.</span>
+              <span>연결은 닉네임 입력 후 시작.</span>
             </div>
           </div>
         </main>
+      </div>
+    </div>
+
+    <!-- Nickname Overlay -->
+    <div id="nickOverlay">
+      <div id="nickCard">
+        <h2>닉네임을 입력해주세요</h2>
+        <p>
+          채팅에서 표시될 이름이에요. 서버에는 저장되지 않고 브라우저에만
+          저장돼요.
+        </p>
+        <input id="nickInput" placeholder="예: 햄찌왕" maxlength="16" />
+        <button id="nickConfirm">입장하기</button>
       </div>
     </div>
 
@@ -625,16 +673,16 @@
       `,
       ];
 
-      const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
       const seed = () => Math.random().toString(16).slice(2, 7);
 
-      // 내 아바타 고정(새로고침해도 유지)
+      // ====== Local keys ======
       const myAvatarKey = "chat_demo_my_avatar";
       const myAvatarSeedKey = "chat_demo_my_avatar_seed";
       const myNickKey = "chat_demo_nick";
+
+      // 내 아바타 고정(새로고침해도 유지)
       const myAvatarIndex = Number(localStorage.getItem(myAvatarKey) ?? -1);
       const myAvatarSeed = localStorage.getItem(myAvatarSeedKey) ?? seed();
-
       const chosenIndex =
         myAvatarIndex >= 0
           ? myAvatarIndex
@@ -642,46 +690,28 @@
       localStorage.setItem(myAvatarKey, String(chosenIndex));
       localStorage.setItem(myAvatarSeedKey, myAvatarSeed);
 
-      document.getElementById("myAvatar").innerHTML =
-        avatarSvgs[chosenIndex](myAvatarSeed);
-
-      const nicknameEl = document.getElementById("nickname");
-      nicknameEl.value = localStorage.getItem(myNickKey) ?? "";
-      nicknameEl.addEventListener("input", () =>
-        localStorage.setItem(myNickKey, nicknameEl.value.trim())
-      );
-
-      // ====== WebSocket ======
+      // DOM refs
       const wsLed = document.getElementById("wsLed");
       const wsText = document.getElementById("wsText");
       const messagesEl = document.getElementById("messages");
       const inputEl = document.getElementById("input");
       const sendBtn = document.getElementById("sendBtn");
+      const nicknameEl = document.getElementById("nickname");
+      const myAvatarEl = document.getElementById("myAvatar");
 
-      // 같은 호스트로 ws 연결 (http->ws, https->wss)
-      const scheme = location.protocol === "https:" ? "wss" : "ws";
-      const wsUrl = `${scheme}://${location.host}/`;
-      let ws;
+      // overlay refs
+      const overlay = document.getElementById("nickOverlay");
+      const nickInput = document.getElementById("nickInput");
+      const nickConfirm = document.getElementById("nickConfirm");
 
-      const otherAvatars = new Map(); // messageText -> svg (간단 매핑: 같은 텍스트가 반복되면 같은 캐릭터처럼 보이게)
-      const getOtherAvatar = (key) => {
-        if (!otherAvatars.has(key)) {
-          const idx = Math.floor(Math.random() * avatarSvgs.length);
-          otherAvatars.set(key, avatarSvgs[idx](seed()));
-        }
-        return otherAvatars.get(key);
-      };
+      // init avatar + nickname input (side)
+      myAvatarEl.innerHTML = avatarSvgs[chosenIndex](myAvatarSeed);
+      nicknameEl.value = localStorage.getItem(myNickKey) ?? "";
+      nicknameEl.addEventListener("input", () => {
+        localStorage.setItem(myNickKey, nicknameEl.value.trim());
+      });
 
-      const nowTime = () => {
-        const d = new Date();
-        const hh = String(d.getHours()).padStart(2, "0");
-        const mm = String(d.getMinutes()).padStart(2, "0");
-        return `${hh}:${mm}`;
-      };
-
-      // 내가 보낸 메시지 에코 제거용
-      let lastSent = { text: "", at: 0 };
-
+      // ====== utils ======
       function setWsState(ok, text) {
         wsLed.classList.toggle("ok", ok);
         wsLed.classList.toggle("bad", !ok);
@@ -707,6 +737,23 @@
         );
       }
 
+      function nowTime() {
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}`;
+      }
+
+      // 상대 아바타: 텍스트별로 고정처럼 보이게(간단 매핑)
+      const otherAvatars = new Map();
+      const getOtherAvatar = (key) => {
+        if (!otherAvatars.has(key)) {
+          const idx = Math.floor(Math.random() * avatarSvgs.length);
+          otherAvatars.set(key, avatarSvgs[idx](seed()));
+        }
+        return otherAvatars.get(key);
+      };
+
       function addMessage({ text, me = false }) {
         const nick = (nicknameEl.value || "나").trim();
         const time = nowTime();
@@ -722,19 +769,11 @@
         const content = document.createElement("div");
         content.className = "content";
 
-        const meta = document.createElement("div");
-        meta.className = "metaLine";
-        meta.innerHTML = me
-          ? `<span style="font-weight:800; color: rgba(255,255,255,.92); display:none;"></span>`
-          : `<span style="font-weight:900; color: var(--text); letter-spacing:-.02em;">상대</span><span>·</span><span>${time}</span>`;
-
         const bubble = document.createElement("div");
         bubble.className = "bubble";
         bubble.innerHTML = safe;
 
         if (me) {
-          // 내 메시지는 메타라인을 버블 아래로 작게 표시(토스식 깔끔함)
-          meta.innerHTML = `<span style="font-weight:900; color: rgba(255,255,255,.92); display:none;"></span>`;
           const tiny = document.createElement("div");
           tiny.className = "metaLine";
           tiny.style.justifyContent = "flex-end";
@@ -744,6 +783,9 @@
           content.appendChild(bubble);
           content.appendChild(tiny);
         } else {
+          const meta = document.createElement("div");
+          meta.className = "metaLine";
+          meta.innerHTML = `<span style="font-weight:900; color: var(--text); letter-spacing:-.02em;">상대</span><span>·</span><span>${time}</span>`;
           content.appendChild(meta);
           content.appendChild(bubble);
         }
@@ -754,6 +796,15 @@
         messagesEl.appendChild(row);
         scrollToBottom();
       }
+
+      // ====== WebSocket ======
+      const scheme = location.protocol === "https:" ? "wss" : "ws";
+      const wsUrl = `${scheme}://${location.host}/`;
+      let ws;
+
+      // 내가 보낸 메시지는 "서버에서 돌아올 때"만 1번 렌더링하기 위한 큐
+      const pendingMine = []; // { text, at }
+      const PENDING_TTL_MS = 30_000;
 
       function connect() {
         setWsState(false, "연결 중…");
@@ -766,27 +817,43 @@
         ws.onmessage = (ev) => {
           const text = (ev.data ?? "").toString();
 
-          // 내가 보낸 메시지 에코면 숨김(1.2초 내 동일 텍스트)
-          const isEcho =
-            text === lastSent.text && Date.now() - lastSent.at < 1200;
-          if (isEcho) return;
+          // pending 정리
+          const now = Date.now();
+          while (
+            pendingMine.length &&
+            now - pendingMine[0].at > PENDING_TTL_MS
+          ) {
+            pendingMine.shift();
+          }
 
+          // 내가 보낸 메시지면 "내 메시지"로 1번만 표시
+          const idx = pendingMine.findIndex((m) => m.text === text);
+          if (idx !== -1) {
+            pendingMine.splice(idx, 1);
+            addMessage({ text, me: true });
+            return;
+          }
+
+          // 나머지는 상대
           addMessage({ text, me: false });
         };
-      }
 
-      connect();
+        // 안내 메시지 1번
+        addMessage({
+          text: "닉네임 설정 끝났으면 이제 Enter로 전송하면 됨. (Shift+Enter는 줄바꿈)",
+          me: false,
+        });
+      }
 
       function send() {
         const text = (inputEl.value || "").trim();
         if (!text) return;
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
-        // 내 메시지는 즉시 렌더링(UX)
-        addMessage({ text, me: true });
-
-        lastSent = { text, at: Date.now() };
+        // 화면에 즉시 찍지 않는다(중복 방지). 서버 에코로만 1번 찍음.
+        pendingMine.push({ text, at: Date.now() });
         ws.send(text);
+
         inputEl.value = "";
         inputEl.style.height = "auto";
         inputEl.focus();
@@ -807,11 +874,38 @@
         inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
       });
 
-      // 첫 인사(너무 시끄럽진 않게)
-      addMessage({
-        text: "연결되면 메시지 입력하고 Enter 치면 됨. (Shift+Enter는 줄바꿈)",
-        me: false,
+      // ====== Nickname overlay flow ======
+      function ensureNickname() {
+        const saved = (localStorage.getItem(myNickKey) ?? "").trim();
+        if (saved) {
+          overlay.style.display = "none";
+          nicknameEl.value = saved;
+          connect();
+        } else {
+          overlay.style.display = "flex";
+          nickInput.value = "";
+          nickInput.focus();
+          setWsState(false, "닉네임 필요");
+        }
+      }
+
+      nickConfirm.addEventListener("click", () => {
+        const val = nickInput.value.trim();
+        if (!val) return;
+        localStorage.setItem(myNickKey, val);
+        nicknameEl.value = val;
+        overlay.style.display = "none";
+        connect();
       });
+
+      nickInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          nickConfirm.click();
+        }
+      });
+
+      // 최초 진입
+      ensureNickname();
     </script>
   </body>
 </html>
