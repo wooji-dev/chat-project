@@ -83,6 +83,7 @@
         gap: 12px;
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(8px);
+        flex: 0 0 auto;
       }
 
       .left {
@@ -229,11 +230,29 @@
         box-shadow: var(--shadow-soft);
       }
 
+      /* Kakao-like system message */
+      .sysRow {
+        display: flex;
+        justify-content: center;
+        margin: 6px 0;
+      }
+      .sysPill {
+        font-size: 12px;
+        font-weight: 900;
+        color: rgba(100, 116, 139, 0.95);
+        background: rgba(230, 234, 245, 0.65);
+        border: 1px solid rgba(230, 234, 245, 0.95);
+        padding: 7px 10px;
+        border-radius: 999px;
+        backdrop-filter: blur(6px);
+      }
+
       .composer {
         padding: 14px;
         border-top: 1px solid var(--line);
         background: rgba(255, 255, 255, 0.92);
         backdrop-filter: blur(10px);
+        flex: 0 0 auto;
       }
 
       .bar {
@@ -301,7 +320,7 @@
       #toBottom {
         position: absolute;
         right: 16px;
-        bottom: 92px; /* 위에 composer가 있어서 조금 띄움 */
+        bottom: 92px;
         border: 1px solid var(--line);
         background: rgba(255, 255, 255, 0.92);
         backdrop-filter: blur(8px);
@@ -465,13 +484,13 @@
           </div>
           <div class="hint">
             <span>내 메시지 오른쪽 / 상대 왼쪽</span>
-            <span>한글 입력 중 Enter는 확정이라 전송 안 함</span>
+            <span>입장 알림 + 닉네임 표시 지원</span>
           </div>
         </div>
       </main>
     </div>
 
-    <!-- Nickname Overlay (first entry) -->
+    <!-- Nickname Overlay -->
     <div id="nickOverlay">
       <div id="nickCard">
         <div id="nickTop">
@@ -483,10 +502,7 @@
             </div>
           </div>
         </div>
-        <p>
-          이름은 화면에만 표시돼요. 서버에는 저장 안 되고 브라우저에만
-          저장됩니다.
-        </p>
+        <p>닉네임/캐릭터는 브라우저에만 저장돼요. (서버 DB 저장 없음)</p>
 
         <input id="nickInput" placeholder="예: 햄찌왕" maxlength="16" />
         <button id="nickConfirm">입장하기</button>
@@ -501,7 +517,7 @@
     </div>
 
     <script>
-      // ====== 캐릭터 아바타(SVG) ======
+      // ====== Avatar SVGs ======
       const avatarSvgs = [
         (seed) => `
         <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
@@ -559,12 +575,13 @@
         </svg>
       `,
       ];
-      const seed = () => Math.random().toString(16).slice(2, 7);
 
-      // ====== Local key (nickname only) ======
+      // ====== Keys ======
       const myNickKey = "chat_demo_nick";
+      const myAvatarKey = "chat_demo_avatar_idx";
+      const myClientIdKey = "chat_demo_client_id";
 
-      // DOM refs
+      // ====== DOM ======
       const wsLed = document.getElementById("wsLed");
       const wsText = document.getElementById("wsText");
       const messagesEl = document.getElementById("messages");
@@ -574,27 +591,35 @@
       const titleText = document.getElementById("titleText");
       const toBottomBtn = document.getElementById("toBottom");
 
-      // overlay refs
       const overlay = document.getElementById("nickOverlay");
       const nickInput = document.getElementById("nickInput");
       const nickConfirm = document.getElementById("nickConfirm");
       const nickAvatar = document.getElementById("nickAvatar");
       const regenAvatarBtn = document.getElementById("regenAvatar");
 
-      // ====== IME(한글 조합) 처리 ======
-      let composing = false;
-      inputEl.addEventListener("compositionstart", () => {
-        composing = true;
-      });
-      inputEl.addEventListener("compositionend", () => {
-        composing = false;
-      });
+      // ====== Helpers ======
+      const seed = () => Math.random().toString(16).slice(2, 7);
 
-      // 같은 텍스트 연속 호출 방지(혹시 모를 중복 enter)
-      let lastSendAttempt = { text: "", at: 0 };
-      const SEND_DEBOUNCE_MS = 250;
+      function uuid() {
+        if (crypto?.randomUUID) return crypto.randomUUID();
+        return (
+          "id-" +
+          Math.random().toString(16).slice(2) +
+          "-" +
+          Date.now().toString(16)
+        );
+      }
 
-      // ====== utils ======
+      function hashString(str) {
+        // simple stable hash
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+      }
+
       function setWsState(ok, text) {
         wsLed.classList.toggle("ok", ok);
         wsLed.classList.toggle("bad", !ok);
@@ -624,7 +649,7 @@
       }
 
       function isNearBottom() {
-        const threshold = 140; // px
+        const threshold = 140;
         return (
           messagesEl.scrollHeight -
             (messagesEl.scrollTop + messagesEl.clientHeight) <
@@ -633,11 +658,7 @@
       }
 
       function scrollToBottom(force = false) {
-        if (force) {
-          messagesEl.scrollTop = messagesEl.scrollHeight;
-          return;
-        }
-        if (isNearBottom()) {
+        if (force || isNearBottom()) {
           messagesEl.scrollTop = messagesEl.scrollHeight;
         }
       }
@@ -653,18 +674,23 @@
         inputEl.focus();
       });
 
-      // 상대 아바타: 텍스트별로 고정처럼 보이게(간단 매핑)
-      const otherAvatars = new Map();
-      const getOtherAvatar = (key) => {
-        if (!otherAvatars.has(key)) {
-          const idx = Math.floor(Math.random() * avatarSvgs.length);
-          otherAvatars.set(key, avatarSvgs[idx](seed()));
-        }
-        return otherAvatars.get(key);
-      };
+      // ====== Avatar resolution (per nick) ======
+      function avatarForNick(nick) {
+        const idx = hashString(nick) % avatarSvgs.length;
+        return avatarSvgs[idx](hashString(nick).toString(16).slice(0, 5));
+      }
 
-      function addMessage({ text, me = false }) {
-        const nick = (localStorage.getItem(myNickKey) || "나").trim();
+      // ====== Renderers ======
+      function addSystem(text) {
+        const row = document.createElement("div");
+        row.className = "sysRow";
+        row.innerHTML = `<div class="sysPill">${escapeHtml(text)}</div>`;
+        messagesEl.appendChild(row);
+        scrollToBottom(false);
+        updateToBottomButton();
+      }
+
+      function addChat({ text, nick, me }) {
         const time = nowTime();
         const safe = escapeHtml(text);
 
@@ -673,7 +699,7 @@
 
         const avatarWrap = document.createElement("div");
         avatarWrap.className = "avatarWrap";
-        avatarWrap.innerHTML = me ? "" : getOtherAvatar(text);
+        avatarWrap.innerHTML = me ? "" : avatarForNick(nick || "상대");
 
         const content = document.createElement("div");
         content.className = "content";
@@ -687,14 +713,16 @@
           tiny.className = "metaLine";
           tiny.style.justifyContent = "flex-end";
           tiny.innerHTML = `<span style="font-weight:900; color: rgba(45,91,255,.75);">${escapeHtml(
-            nick
+            nick || "나"
           )}</span><span>·</span><span>${time}</span>`;
           content.appendChild(bubble);
           content.appendChild(tiny);
         } else {
           const meta = document.createElement("div");
           meta.className = "metaLine";
-          meta.innerHTML = `<span style="font-weight:900; color: var(--text); letter-spacing:-.02em;">상대</span><span>·</span><span>${time}</span>`;
+          meta.innerHTML = `<span style="font-weight:900; color: var(--text); letter-spacing:-.02em;">${escapeHtml(
+            nick || "상대"
+          )}</span><span>·</span><span>${time}</span>`;
           content.appendChild(meta);
           content.appendChild(bubble);
         }
@@ -707,94 +735,18 @@
         updateToBottomButton();
       }
 
-      // ====== WebSocket ======
-      const scheme = location.protocol === "https:" ? "wss" : "ws";
-      const wsUrl = `${scheme}://${location.host}/`;
-      let ws;
-
-      // 내가 보낸 메시지는 "서버에서 돌아올 때"만 1번 렌더링하기 위한 큐
-      const pendingMine = []; // { text, at }
-      const PENDING_TTL_MS = 30_000;
-
-      function connect() {
-        setWsState(false, "연결 중…");
-        ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => setWsState(true, "연결됨");
-        ws.onclose = () => setWsState(false, "연결 끊김");
-        ws.onerror = () => setWsState(false, "연결 오류");
-
-        ws.onmessage = (ev) => {
-          const text = (ev.data ?? "").toString();
-
-          // pending 정리
-          const now = Date.now();
-          while (
-            pendingMine.length &&
-            now - pendingMine[0].at > PENDING_TTL_MS
-          ) {
-            pendingMine.shift();
-          }
-
-          // 내가 보낸 메시지면 "내 메시지"로 1번만 표시
-          const idx = pendingMine.findIndex((m) => m.text === text);
-          if (idx !== -1) {
-            pendingMine.splice(idx, 1);
-            addMessage({ text, me: true });
-            return;
-          }
-
-          addMessage({ text, me: false });
-        };
-
-        const nick = (localStorage.getItem(myNickKey) || "").trim();
-        addMessage({
-          text: `${nick} 입장 완료. 이제 Enter로 전송하면 됨. (Shift+Enter 줄바꿈)`,
-          me: false,
-        });
-
-        // 첫 연결 직후 바닥으로
-        setTimeout(() => {
-          messagesEl.scrollTop = messagesEl.scrollHeight;
-          updateToBottomButton();
-        }, 0);
-      }
-
-      function send() {
-        if (composing) return;
-
-        const text = (inputEl.value || "").trim();
-        if (!text) return;
-        if (!ws || ws.readyState !== WebSocket.OPEN) return;
-
-        const now = Date.now();
-        if (
-          text === lastSendAttempt.text &&
-          now - lastSendAttempt.at < SEND_DEBOUNCE_MS
-        )
-          return;
-        lastSendAttempt = { text, at: now };
-
-        // 화면에 즉시 찍지 않는다(중복 방지). 서버 에코로만 1번 찍음.
-        pendingMine.push({ text, at: now });
-        ws.send(text);
-
-        inputEl.value = "";
-        inputEl.style.height = "auto";
-        inputEl.focus();
-      }
-
-      sendBtn.addEventListener("click", send);
-
-      inputEl.addEventListener("keydown", (e) => {
-        // 한글 조합 중 Enter는 "확정" 이벤트일 수 있음
-        if (e.isComposing || composing || e.keyCode === 229) return;
-
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          send();
-        }
+      // ====== IME(한글 조합) ======
+      let composing = false;
+      inputEl.addEventListener("compositionstart", () => {
+        composing = true;
       });
+      inputEl.addEventListener("compositionend", () => {
+        composing = false;
+      });
+
+      // 디바운스(엔터 튐 방지)
+      let lastSendAttempt = { at: 0 };
+      const SEND_DEBOUNCE_MS = 200;
 
       // textarea auto-grow
       inputEl.addEventListener("input", () => {
@@ -802,22 +754,185 @@
         inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
       });
 
-      // ====== Nickname overlay flow (first entry) ======
-      let myAvatarIdx = Math.floor(Math.random() * avatarSvgs.length);
-      let myAvatarSeed = seed();
+      // ====== Identity ======
+      function getMyNick() {
+        return (localStorage.getItem(myNickKey) || "").trim();
+      }
+
+      function getOrCreateClientId() {
+        let id = localStorage.getItem(myClientIdKey);
+        if (!id) {
+          id = uuid();
+          localStorage.setItem(myClientIdKey, id);
+        }
+        return id;
+      }
+      const myClientId = getOrCreateClientId();
+
+      // ====== WebSocket + Protocol ======
+      // message format (stringified JSON)
+      // { v:1, type:"join"|"chat", nick, clientId, msgId, text, ts }
+      const scheme = location.protocol === "https:" ? "wss" : "ws";
+      const wsUrl = `${scheme}://${location.host}/`;
+      let ws;
+
+      // pending by msgId (완전 정확)
+      const pendingMine = new Set();
+
+      function safeParse(raw) {
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return null;
+        }
+      }
+
+      function sendPayload(payload) {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+        ws.send(JSON.stringify(payload));
+        return true;
+      }
+
+      function connect() {
+        setWsState(false, "연결 중…");
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          setWsState(true, "연결됨");
+
+          const nick = getMyNick();
+          // 카톡식 입장 메시지
+          sendPayload({
+            v: 1,
+            type: "join",
+            nick,
+            clientId: myClientId,
+            msgId: uuid(),
+            ts: Date.now(),
+          });
+        };
+
+        ws.onclose = () => setWsState(false, "연결 끊김");
+        ws.onerror = () => setWsState(false, "연결 오류");
+
+        ws.onmessage = (ev) => {
+          const raw = (ev.data ?? "").toString();
+          const msg = safeParse(raw);
+
+          // 구버전(plain text)도 fallback
+          if (!msg || !msg.type) {
+            // sender 구분 불가 -> 그냥 "상대"로 표시
+            addChat({ text: raw, nick: "상대", me: false });
+            return;
+          }
+
+          const isMe = msg.clientId && msg.clientId === myClientId;
+          if (msg.type === "join") {
+            // 내 입장 알림도 보여주되, 원하면 여기서 isMe면 숨겨도 됨
+            addSystem(`(${msg.nick || "익명"})님이 입장했습니다`);
+            return;
+          }
+
+          if (msg.type === "chat") {
+            // 내가 보낸 건 msgId로 확정
+            if (isMe && msg.msgId && pendingMine.has(msg.msgId)) {
+              pendingMine.delete(msg.msgId);
+              addChat({
+                text: msg.text || "",
+                nick: msg.nick || getMyNick(),
+                me: true,
+              });
+              return;
+            }
+
+            // 내가 보냈는데 pending에 없으면(새로고침 직후 등) 그냥 me로도 처리 가능
+            if (isMe) {
+              addChat({
+                text: msg.text || "",
+                nick: msg.nick || getMyNick(),
+                me: true,
+              });
+              return;
+            }
+
+            addChat({
+              text: msg.text || "",
+              nick: msg.nick || "상대",
+              me: false,
+            });
+            return;
+          }
+
+          // 알 수 없는 타입은 무시/표시
+          addChat({ text: raw, nick: "상대", me: false });
+        };
+
+        // 첫 연결 후 아래로
+        setTimeout(() => {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+          updateToBottomButton();
+        }, 0);
+      }
+
+      function sendChat() {
+        if (composing) return;
+
+        const text = (inputEl.value || "").trim();
+        if (!text) return;
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+        const now = Date.now();
+        if (now - lastSendAttempt.at < SEND_DEBOUNCE_MS) return;
+        lastSendAttempt = { at: now };
+
+        const msgId = uuid();
+        pendingMine.add(msgId);
+
+        sendPayload({
+          v: 1,
+          type: "chat",
+          nick: getMyNick(),
+          clientId: myClientId,
+          msgId,
+          text,
+          ts: now,
+        });
+
+        inputEl.value = "";
+        inputEl.style.height = "auto";
+        inputEl.focus();
+      }
+
+      sendBtn.addEventListener("click", sendChat);
+
+      inputEl.addEventListener("keydown", (e) => {
+        // 한글 조합중 Enter는 확정용 -> 전송 금지
+        if (e.isComposing || composing || e.keyCode === 229) return;
+
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendChat();
+        }
+      });
+
+      // ====== Nickname overlay ======
+      let myAvatarIdx = Number(localStorage.getItem(myAvatarKey));
+      if (Number.isNaN(myAvatarIdx))
+        myAvatarIdx = Math.floor(Math.random() * avatarSvgs.length);
+
       function renderNickAvatar() {
-        nickAvatar.innerHTML = avatarSvgs[myAvatarIdx](myAvatarSeed);
+        nickAvatar.innerHTML = avatarSvgs[myAvatarIdx](seed());
       }
       renderNickAvatar();
 
       regenAvatarBtn.addEventListener("click", () => {
         myAvatarIdx = Math.floor(Math.random() * avatarSvgs.length);
-        myAvatarSeed = seed();
+        localStorage.setItem(myAvatarKey, String(myAvatarIdx));
         renderNickAvatar();
       });
 
       function ensureNickname() {
-        const saved = (localStorage.getItem(myNickKey) ?? "").trim();
+        const saved = getMyNick();
         if (saved) {
           overlay.style.display = "none";
           nickBadge.textContent = saved;
@@ -842,12 +957,10 @@
       });
 
       nickInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          nickConfirm.click();
-        }
+        if (e.key === "Enter") nickConfirm.click();
       });
 
-      // 최초 진입
+      // start
       ensureNickname();
     </script>
   </body>
