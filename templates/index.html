@@ -66,6 +66,7 @@
         display: flex;
         flex-direction: column;
         min-height: min(740px, calc(100vh - 48px));
+        position: relative;
       }
 
       .chatHeader {
@@ -95,7 +96,7 @@
         border: 1px solid var(--line);
         background: #fff;
         box-shadow: var(--shadow-soft);
-        font-weight: 800;
+        font-weight: 900;
         color: var(--text);
         font-size: 12px;
         white-space: nowrap;
@@ -133,7 +134,7 @@
         white-space: nowrap;
       }
       .kbd {
-        font-weight: 800;
+        font-weight: 900;
         padding: 2px 7px;
         border-radius: 10px;
         border: 1px solid var(--line);
@@ -149,6 +150,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
+        scroll-behavior: smooth;
       }
 
       .msgRow {
@@ -195,7 +197,7 @@
 
       .content {
         min-width: 0;
-        max-width: min(600px, 78%);
+        max-width: min(620px, 78%);
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -247,7 +249,7 @@
         font-size: 13.5px;
         line-height: 1.35;
         min-height: 22px;
-        max-height: 120px;
+        max-height: 140px;
         padding: 4px 2px;
         font-family: inherit;
       }
@@ -287,6 +289,35 @@
         color: var(--muted);
         font-size: 12px;
         flex-wrap: wrap;
+      }
+
+      /* Scroll-to-bottom button */
+      #toBottom {
+        position: absolute;
+        right: 16px;
+        bottom: 92px; /* 위에 composer가 있어서 조금 띄움 */
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(8px);
+        box-shadow: var(--shadow-soft);
+        border-radius: 999px;
+        padding: 10px 12px;
+        font-weight: 900;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+      }
+      #toBottom:active {
+        transform: translateY(1px);
+      }
+      #toBottom .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(45, 91, 255, 0.95);
+        box-shadow: 0 0 0 4px rgba(45, 91, 255, 0.12);
       }
 
       /* Nickname Overlay */
@@ -409,6 +440,12 @@
 
         <div class="messages" id="messages" aria-live="polite"></div>
 
+        <button id="toBottom" type="button" title="맨 아래로">
+          <span class="dot"></span>
+          <span>아래로</span>
+          <span aria-hidden="true">↓</span>
+        </button>
+
         <div class="composer">
           <div class="bar">
             <textarea
@@ -422,7 +459,7 @@
           </div>
           <div class="hint">
             <span>내 메시지 오른쪽 / 상대 왼쪽</span>
-            <span>닉네임은 첫 입장 때만 설정</span>
+            <span>한글 입력 중 Enter는 확정이라 전송 안 함</span>
           </div>
         </div>
       </main>
@@ -441,7 +478,7 @@
           </div>
         </div>
         <p>
-          이름은 채팅 화면에만 표시돼요. 서버에는 저장 안 되고 브라우저에만
+          이름은 화면에만 표시돼요. 서버에는 저장 안 되고 브라우저에만
           저장됩니다.
         </p>
 
@@ -460,7 +497,6 @@
     <script>
       // ====== 캐릭터 아바타(SVG) ======
       const avatarSvgs = [
-        // 햄찌
         (seed) => `
         <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -481,7 +517,6 @@
           <circle cx="44" cy="36" r="3.5" fill="rgba(0,225,255,.18)"/>
         </svg>
       `,
-        // 토끼
         (seed) => `
         <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
           <rect width="64" height="64" rx="18" fill="rgba(155,81,224,.10)"/>
@@ -494,7 +529,6 @@
           <path d="M26 44c2 2 4 3 6 3s4-1 6-3" stroke="rgba(155,81,224,.65)" stroke-width="2" stroke-linecap="round" fill="none"/>
         </svg>
       `,
-        // 고양이
         (seed) => `
         <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
           <rect width="64" height="64" rx="18" fill="rgba(45,91,255,.09)"/>
@@ -508,7 +542,6 @@
           <path d="M44 40c-4 0-6 1-8 2" stroke="rgba(0,225,255,.55)" stroke-width="2" stroke-linecap="round"/>
         </svg>
       `,
-        // 펭귄
         (seed) => `
         <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
           <rect width="64" height="64" rx="18" fill="rgba(0,225,255,.10)"/>
@@ -520,7 +553,6 @@
         </svg>
       `,
       ];
-
       const seed = () => Math.random().toString(16).slice(2, 7);
 
       // ====== Local key (nickname only) ======
@@ -534,6 +566,7 @@
       const sendBtn = document.getElementById("sendBtn");
       const nickBadge = document.getElementById("nickBadge");
       const titleText = document.getElementById("titleText");
+      const toBottomBtn = document.getElementById("toBottom");
 
       // overlay refs
       const overlay = document.getElementById("nickOverlay");
@@ -542,6 +575,19 @@
       const nickAvatar = document.getElementById("nickAvatar");
       const regenAvatarBtn = document.getElementById("regenAvatar");
 
+      // ====== IME(한글 조합) 처리 ======
+      let composing = false;
+      inputEl.addEventListener("compositionstart", () => {
+        composing = true;
+      });
+      inputEl.addEventListener("compositionend", () => {
+        composing = false;
+      });
+
+      // 같은 텍스트 연속 호출 방지(혹시 모를 중복 enter)
+      let lastSendAttempt = { text: "", at: 0 };
+      const SEND_DEBOUNCE_MS = 250;
+
       // ====== utils ======
       function setWsState(ok, text) {
         wsLed.classList.toggle("ok", ok);
@@ -549,9 +595,7 @@
         wsText.textContent = text;
         sendBtn.disabled = !ok;
       }
-      function scrollToBottom() {
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
+
       function escapeHtml(s) {
         return s.replace(
           /[&<>"']/g,
@@ -565,12 +609,43 @@
             }[m])
         );
       }
+
       function nowTime() {
         const d = new Date();
         const hh = String(d.getHours()).padStart(2, "0");
         const mm = String(d.getMinutes()).padStart(2, "0");
         return `${hh}:${mm}`;
       }
+
+      function isNearBottom() {
+        const threshold = 140; // px
+        return (
+          messagesEl.scrollHeight -
+            (messagesEl.scrollTop + messagesEl.clientHeight) <
+          threshold
+        );
+      }
+
+      function scrollToBottom(force = false) {
+        if (force) {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+          return;
+        }
+        if (isNearBottom()) {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+      }
+
+      function updateToBottomButton() {
+        toBottomBtn.style.display = isNearBottom() ? "none" : "flex";
+      }
+
+      messagesEl.addEventListener("scroll", updateToBottomButton);
+      toBottomBtn.addEventListener("click", () => {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        updateToBottomButton();
+        inputEl.focus();
+      });
 
       // 상대 아바타: 텍스트별로 고정처럼 보이게(간단 매핑)
       const otherAvatars = new Map();
@@ -622,7 +697,8 @@
         row.appendChild(content);
 
         messagesEl.appendChild(row);
-        scrollToBottom();
+        scrollToBottom(false);
+        updateToBottomButton();
       }
 
       // ====== WebSocket ======
@@ -670,15 +746,31 @@
           text: `${nick} 입장 완료. 이제 Enter로 전송하면 됨. (Shift+Enter 줄바꿈)`,
           me: false,
         });
+
+        // 첫 연결 직후 바닥으로
+        setTimeout(() => {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+          updateToBottomButton();
+        }, 0);
       }
 
       function send() {
+        if (composing) return;
+
         const text = (inputEl.value || "").trim();
         if (!text) return;
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
+        const now = Date.now();
+        if (
+          text === lastSendAttempt.text &&
+          now - lastSendAttempt.at < SEND_DEBOUNCE_MS
+        )
+          return;
+        lastSendAttempt = { text, at: now };
+
         // 화면에 즉시 찍지 않는다(중복 방지). 서버 에코로만 1번 찍음.
-        pendingMine.push({ text, at: Date.now() });
+        pendingMine.push({ text, at: now });
         ws.send(text);
 
         inputEl.value = "";
@@ -686,9 +778,12 @@
         inputEl.focus();
       }
 
-      document.getElementById("sendBtn").addEventListener("click", send);
+      sendBtn.addEventListener("click", send);
 
       inputEl.addEventListener("keydown", (e) => {
+        // 한글 조합 중 Enter는 "확정" 이벤트일 수 있음
+        if (e.isComposing || composing || e.keyCode === 229) return;
+
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           send();
@@ -698,7 +793,7 @@
       // textarea auto-grow
       inputEl.addEventListener("input", () => {
         inputEl.style.height = "auto";
-        inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
       });
 
       // ====== Nickname overlay flow (first entry) ======
