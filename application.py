@@ -1,89 +1,185 @@
 import json
-from broadcaster import Broadcast
+import os
+import aiohttp
+
+from dotenv import load_dotenv
 from starlette.applications import Starlette
-from starlette.concurrency import run_until_first_complete
 from starlette.routing import Route, WebSocketRoute
 from starlette.templating import Jinja2Templates
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-import os
-import requests
-import aiohttp
-import asyncio
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
+load_dotenv()
 
-load_dotenv()  # Load .env variables
-
-if os.environ.get("ENV_STATE") == "prod":
-    print("Production mode")
-    broadcast = Broadcast("redis://"+os.environ.get('REDIS_HOST')+":6379")
-else:
-    print("Development mode")
-    broadcast = Broadcast("redis://127.0.0.1:6379")
 templates = Jinja2Templates("templates")
+
+BOT_NAME = os.environ.get("BOT_NAME", "신한투자증권 프로봇")
+BOT_API_URL = os.environ.get(
+    "BOT_API_URL",
+    "https://bm0l8cj2xl.execute-api.ap-northeast-2.amazonaws.com/default/llm-lamda",
+)
+
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+]
+
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+]
 
 
 async def homepage(request):
-    template = "index.html"
-    context = {"request": request}
-    return templates.TemplateResponse(template, context)
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
-async def chatroom_ws(websocket):
+def _extract_user_message(payload: dict) -> str:
+    v = payload.get("message")
+    if isinstance(v, str) and v.strip():
+        return v.strip()
+    # 혹시라도 다른 키로 보내면 흡수
+    for k in ("text", "m", "userMessage"):
+        vv = payload.get(k)
+        if isinstance(vv, str) and vv.strip():
+            return vv.strip()
+    return ""
+
+
+async def call_bot_api_raw(user_text: str) -> str:
+    """
+    봇 API(Lambda/API Gateway) 응답을 '원문 그대로' 문자열로 반환한다.
+    예:
+    {
+      "statusCode": 200,
+      "headers": {...},
+      "body": "{\"answer\":\"...\"}"
+    }
+    이런 텍스트를 그대로 반환.
+    """
+    params = {"m": user_text}
+    timeout = aiohttp.ClientTimeout(total=45)
+
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(BOT_API_URL, params=params) as resp:
+            # status가 4xx/5xx여도 "원문"이 중요하면 text 그대로 가져온다.
+            raw_text = await resp.text()
+
+            # 그래도 status 정보를 시스템이 알 수 있게 하고 싶으면, 여기서 에러로 보내지 말고 raw_text에 맡긴다.
+            # 단, 네가 원하면 status>=400일 때 type:error로 별도 처리도 가능.
+
+            return raw_text
+
+
+async def ws_chatbot(websocket: WebSocket):
     await websocket.accept()
-    channel_name = "demo"
-    await run_until_first_complete(
-        (chatroom_ws_receiver, {"websocket": websocket, "channel_name": channel_name}),
-        (chatroom_ws_sender, {"websocket": websocket, "channel_name": channel_name}),
+
+    # 연결 안내
+    await websocket.send_text(
+        json.dumps(
+            {
+                "type": "message",
+                "role": "assistant",
+                "message": json.dumps(
+                    {
+                        "info": f"{BOT_NAME} 연결 완료",
+                        "note": "봇 API 응답은 원문 JSON 문자열 그대로 전달됩니다.",
+                    },
+                    ensure_ascii=False,
+                ),
+            },
+            ensure_ascii=False,
+        )
     )
 
+    try:
+        while True:
+            raw = await websocket.receive_text()
 
-async def chatroom_ws_receiver(websocket, channel_name):
-    async for message in websocket.iter_text():
-        await broadcast.publish(channel=channel_name, message=message)
+            try:
+                payload = json.loads(raw)
+            except Exception:
+                payload = {"message": raw}
 
+            user_text = _extract_user_message(payload)
+            if not user_text:
+                await websocket.send_text(
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "role": "system",
+                            "message": "빈 메시지는 처리할 수 없습니다.",
+                        },
+                        ensure_ascii=False,
+                    )
+                )
+                continue
 
-async def chatroom_ws_sender(websocket, channel_name):
-    async with broadcast.subscribe(channel=channel_name) as subscriber:
-        async for event in subscriber:
+            # typing
             await websocket.send_text(
-                event.message
+                json.dumps(
+                    {
+                        "type": "typing",
+                        "role": "system",
+                        "message": f"{BOT_NAME}이(가) 입력 중입니다…",
+                    },
+                    ensure_ascii=False,
+                )
             )
+
+            try:
+                bot_raw = await call_bot_api_raw(user_text)
+            except Exception as e:
+                await websocket.send_text(
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "role": "system",
+                            "message": f"봇 호출 실패: {str(e)}",
+                        },
+                        ensure_ascii=False,
+                    )
+                )
+                continue
+
+            # ✅ 여기서 파싱/가공 없이 그대로 전달
             await websocket.send_text(
-                '{"action":"message","user":"안내사항","message":"봇이 입력 중입니다"}'
+                json.dumps(
+                    {
+                        "type": "message",
+                        "role": "assistant",
+                        "message": bot_raw,
+                    },
+                    ensure_ascii=False,
+                )
             )
-            params = {"m": json.loads(event.message)['message']}
-            async with aiohttp.ClientSession() as session:
-                async with session.get("https://bm0l8cj2xl.execute-api.ap-northeast-2.amazonaws.com/default/llm-lamda", params=params) as resp:
-                    r = await resp.json()
-            bot_message = r['choices'][0]['message']['content']
-            bot_message = json.dumps(bot_message, ensure_ascii=False)
+
+    except WebSocketDisconnect:
+        return
+    except Exception as e:
+        try:
             await websocket.send_text(
-                f'{{"action":"message","user":"신한투자증권 프로봇","message":{bot_message}}}'
+                json.dumps(
+                    {
+                        "type": "error",
+                        "role": "system",
+                        "message": f"서버 오류: {str(e)}",
+                    },
+                    ensure_ascii=False,
+                )
             )
+        except Exception:
+            pass
 
 
 routes = [
     Route("/", homepage),
-    WebSocketRoute("/", chatroom_ws, name='chatroom_ws'),
+    WebSocketRoute("/ws", ws_chatbot),
 ]
 
-origins = [
-    "http://localhost",
-    "http://localhost:8000"
-]
-
-middleware = [
-    Middleware(CORSMiddleware,
-               allow_origins=origins,
-               allow_methods=['*'],
-               allow_headers=['*'])
-]
-
-app = Starlette(
-    routes=routes,
-    on_startup=[broadcast.connect],
-    on_shutdown=[broadcast.disconnect],
-    middleware=middleware
-)
+app = Starlette(routes=routes, middleware=middleware)
