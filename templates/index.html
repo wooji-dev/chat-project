@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Chat Demo</title>
+    <title>AI Chatbot Demo</title>
     <style>
       :root {
         --bg: #f6f8ff;
@@ -47,7 +47,6 @@
           var(--bg);
         overflow: hidden;
       }
-
       .wrap {
         min-height: 100%;
         display: flex;
@@ -55,7 +54,6 @@
         justify-content: center;
         padding: 24px 14px;
       }
-
       .panel {
         width: min(920px, 100%);
         background: var(--card);
@@ -63,17 +61,13 @@
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         overflow: hidden;
-
         display: flex;
         flex-direction: column;
-
         height: calc(100vh - 48px);
         max-height: calc(100vh - 48px);
         min-height: 0;
-
         position: relative;
       }
-
       .chatHeader {
         padding: 16px 18px;
         border-bottom: 1px solid var(--line);
@@ -85,14 +79,12 @@
         backdrop-filter: blur(8px);
         flex: 0 0 auto;
       }
-
       .left {
         display: flex;
         align-items: center;
         gap: 12px;
         min-width: 0;
       }
-
       .pill {
         display: flex;
         gap: 6px;
@@ -121,7 +113,6 @@
         background: #ef4444;
         box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
       }
-
       .roomTitle {
         margin: 0;
         font-size: 15px;
@@ -130,7 +121,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-
       .status {
         display: flex;
         align-items: center;
@@ -160,56 +150,22 @@
         min-height: 0;
       }
 
-      .msgRow {
+      .row {
         display: flex;
         gap: 10px;
         align-items: flex-end;
         max-width: 100%;
       }
-
-      .msgRow.me {
+      .row.me {
         justify-content: flex-end;
       }
-
-      .msgRow.me .bubble {
-        background: linear-gradient(
-          135deg,
-          rgba(45, 91, 255, 1),
-          rgba(0, 225, 255, 0.85)
-        );
-        color: #fff;
-        border: 0;
-        box-shadow: 0 12px 30px rgba(45, 91, 255, 0.2);
-      }
-      .msgRow.me .avatarWrap {
-        display: none;
-      }
-
-      .avatarWrap {
-        width: 40px;
-        height: 40px;
-        border-radius: 16px;
-        border: 1px solid var(--line);
-        background: #fff;
-        overflow: hidden;
-        display: grid;
-        place-items: center;
-        box-shadow: var(--shadow-soft);
-        flex: 0 0 auto;
-      }
-      .avatarWrap svg {
-        width: 40px;
-        height: 40px;
-      }
-
       .content {
         min-width: 0;
-        max-width: min(620px, 78%);
+        max-width: min(680px, 82%);
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
-
       .metaLine {
         display: flex;
         gap: 8px;
@@ -217,7 +173,6 @@
         color: var(--muted);
         font-size: 12px;
       }
-
       .bubble {
         border: 1px solid var(--line);
         background: #fff;
@@ -229,8 +184,17 @@
         word-break: break-word;
         box-shadow: var(--shadow-soft);
       }
+      .row.me .bubble {
+        background: linear-gradient(
+          135deg,
+          rgba(45, 91, 255, 1),
+          rgba(0, 225, 255, 0.85)
+        );
+        color: #fff;
+        border: 0;
+        box-shadow: 0 12px 30px rgba(45, 91, 255, 0.2);
+      }
 
-      /* Kakao-like system message */
       .sysRow {
         display: flex;
         justify-content: center;
@@ -254,7 +218,6 @@
         backdrop-filter: blur(10px);
         flex: 0 0 auto;
       }
-
       .bar {
         display: flex;
         gap: 10px;
@@ -265,7 +228,6 @@
         background: #fff;
         box-shadow: var(--shadow-soft);
       }
-
       .bar textarea {
         flex: 1;
         border: 0;
@@ -278,7 +240,6 @@
         padding: 4px 2px;
         font-family: inherit;
       }
-
       .btn {
         border: 0;
         border-radius: 16px;
@@ -306,17 +267,6 @@
         box-shadow: none;
       }
 
-      .hint {
-        margin-top: 10px;
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 12px;
-        flex-wrap: wrap;
-      }
-
-      /* Scroll-to-bottom button */
       #toBottom {
         position: absolute;
         right: 16px;
@@ -344,107 +294,9 @@
         background: rgba(45, 91, 255, 0.95);
         box-shadow: 0 0 0 4px rgba(45, 91, 255, 0.12);
       }
-
-      /* Nickname Overlay */
-      #nickOverlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.55);
-        backdrop-filter: blur(6px);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: 16px;
-      }
-      #nickCard {
-        width: min(420px, 100%);
-        background: #fff;
-        border-radius: 22px;
-        padding: 26px;
-        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(230, 234, 245, 0.9);
-      }
-      #nickTop {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        margin-bottom: 12px;
-      }
-      #nickAvatar {
-        width: 46px;
-        height: 46px;
-        border-radius: 18px;
-        display: grid;
-        place-items: center;
-        background: #fff;
-        border: 1px solid var(--line);
-        box-shadow: var(--shadow-soft);
-        overflow: hidden;
-        flex: 0 0 auto;
-      }
-      #nickAvatar svg {
-        width: 46px;
-        height: 46px;
-        display: block;
-      }
-      #nickCard h2 {
-        margin: 0;
-        letter-spacing: -0.03em;
-        font-size: 18px;
-      }
-      #nickCard p {
-        margin: 8px 0 18px;
-        color: var(--muted);
-        font-size: 13.5px;
-        line-height: 1.4;
-      }
-      #nickInput {
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: 14px;
-        border: 1px solid var(--line);
-        font-size: 14px;
-        outline: none;
-      }
-      #nickInput:focus {
-        border-color: rgba(45, 91, 255, 0.55);
-        box-shadow: 0 0 0 4px rgba(45, 91, 255, 0.1);
-      }
-      #nickConfirm {
-        margin-top: 16px;
-        width: 100%;
-        border: 0;
-        border-radius: 16px;
-        padding: 12px;
-        background: var(--primary);
-        color: #fff;
-        font-weight: 900;
-        font-size: 14px;
-        cursor: pointer;
-        box-shadow: 0 14px 30px rgba(45, 91, 255, 0.22);
-      }
-      #nickConfirm:active {
-        transform: translateY(1px);
-      }
-      .subAction {
-        margin-top: 10px;
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 12px;
-      }
-      .linkBtn {
-        border: 0;
-        background: transparent;
-        color: rgba(45, 91, 255, 0.95);
-        font-weight: 900;
-        cursor: pointer;
-        padding: 0;
-      }
     </style>
   </head>
+
   <body>
     <div class="wrap">
       <main class="panel">
@@ -452,14 +304,15 @@
           <div class="left">
             <div class="pill" title="WebSocket 상태">
               <span class="led bad" id="wsLed"></span>
-              <span id="wsText">닉네임 필요</span>
+              <span id="wsText">연결 전</span>
             </div>
-            <h2 class="roomTitle" id="titleText">실시간 채팅</h2>
+            <h2 class="roomTitle">AI 챗봇</h2>
           </div>
           <div class="status">
-            <span id="nickBadge" class="kbd">-</span>
-            <span>채널</span>
-            <span class="kbd">demo</span>
+            <span>모드</span>
+            <span class="kbd">1:1</span>
+            <span>봇</span>
+            <span class="kbd" id="botName">신한투자증권 프로봇</span>
           </div>
         </div>
 
@@ -482,144 +335,21 @@
               <span aria-hidden="true">➜</span>
             </button>
           </div>
-          <div class="hint">
-            <span>내 메시지 오른쪽 / 상대 왼쪽</span>
-            <span>입장 알림 + 닉네임 표시 지원</span>
-          </div>
         </div>
       </main>
     </div>
 
-    <!-- Nickname Overlay -->
-    <div id="nickOverlay">
-      <div id="nickCard">
-        <div id="nickTop">
-          <div id="nickAvatar"></div>
-          <div>
-            <h2>닉네임을 정하고 입장</h2>
-            <div style="font-size: 12px; color: var(--muted); margin-top: 4px">
-              캐릭터는 랜덤 지급
-            </div>
-          </div>
-        </div>
-        <p>닉네임/캐릭터는 브라우저에만 저장돼요. (서버 DB 저장 없음)</p>
-
-        <input id="nickInput" placeholder="예: 햄찌왕" maxlength="16" />
-        <button id="nickConfirm">입장하기</button>
-
-        <div class="subAction">
-          <span>팁: Enter로 바로 입장</span>
-          <button class="linkBtn" id="regenAvatar" type="button">
-            캐릭터 다시 뽑기
-          </button>
-        </div>
-      </div>
-    </div>
-
     <script>
-      // ====== Avatar SVGs ======
-      const avatarSvgs = [
-        (seed) => `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="g${seed}" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="rgba(45,91,255,.95)"/>
-              <stop offset="1" stop-color="rgba(0,225,255,.85)"/>
-            </linearGradient>
-          </defs>
-          <rect width="64" height="64" rx="18" fill="url(#g${seed})" opacity=".12"/>
-          <circle cx="32" cy="35" r="18" fill="#FFF" opacity=".95"/>
-          <circle cx="24" cy="20" r="7" fill="#FFF" opacity=".95"/>
-          <circle cx="40" cy="20" r="7" fill="#FFF" opacity=".95"/>
-          <circle cx="26" cy="33" r="2.2" fill="#0F172A"/>
-          <circle cx="38" cy="33" r="2.2" fill="#0F172A"/>
-          <path d="M30 38c2 2 2 2 4 0" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
-          <path d="M24 41c2.5 2 5 3 8 3s5.5-1 8-3" stroke="rgba(45,91,255,.75)" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <circle cx="20" cy="36" r="3.5" fill="rgba(45,91,255,.18)"/>
-          <circle cx="44" cy="36" r="3.5" fill="rgba(0,225,255,.18)"/>
-        </svg>
-      `,
-        (seed) => `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="18" fill="rgba(155,81,224,.10)"/>
-          <path d="M22 20c-2-10 4-14 8-5" stroke="rgba(45,91,255,.55)" stroke-width="6" stroke-linecap="round"/>
-          <path d="M42 20c2-10-4-14-8-5" stroke="rgba(0,225,255,.55)" stroke-width="6" stroke-linecap="round"/>
-          <circle cx="32" cy="36" r="18" fill="#fff" opacity=".95"/>
-          <circle cx="26" cy="35" r="2.2" fill="#0F172A"/>
-          <circle cx="38" cy="35" r="2.2" fill="#0F172A"/>
-          <path d="M30 40c2 2 2 2 4 0" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
-          <path d="M26 44c2 2 4 3 6 3s4-1 6-3" stroke="rgba(155,81,224,.65)" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-      `,
-        (seed) => `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="18" fill="rgba(45,91,255,.09)"/>
-          <path d="M18 28l6-8 4 7" fill="#fff" opacity=".95"/>
-          <path d="M46 28l-6-8-4 7" fill="#fff" opacity=".95"/>
-          <circle cx="32" cy="38" r="18" fill="#fff" opacity=".95"/>
-          <circle cx="26" cy="37" r="2.2" fill="#0F172A"/>
-          <circle cx="38" cy="37" r="2.2" fill="#0F172A"/>
-          <path d="M32 40l-2 2h4z" fill="#0F172A"/>
-          <path d="M20 40c4 0 6 1 8 2" stroke="rgba(45,91,255,.55)" stroke-width="2" stroke-linecap="round"/>
-          <path d="M44 40c-4 0-6 1-8 2" stroke="rgba(0,225,255,.55)" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      `,
-        (seed) => `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="18" fill="rgba(0,225,255,.10)"/>
-          <ellipse cx="32" cy="38" rx="16" ry="18" fill="#0F172A" opacity=".92"/>
-          <ellipse cx="32" cy="42" rx="10" ry="12" fill="#fff" opacity=".95"/>
-          <circle cx="27" cy="34" r="2.2" fill="#fff"/>
-          <circle cx="37" cy="34" r="2.2" fill="#fff"/>
-          <path d="M30 38h4l-2 3z" fill="rgba(255, 196, 0, .95)"/>
-        </svg>
-      `,
-      ];
-
-      // ====== Keys ======
-      const myNickKey = "chat_demo_nick";
-      const myAvatarKey = "chat_demo_avatar_idx";
-      const myClientIdKey = "chat_demo_client_id";
-
       // ====== DOM ======
       const wsLed = document.getElementById("wsLed");
       const wsText = document.getElementById("wsText");
       const messagesEl = document.getElementById("messages");
       const inputEl = document.getElementById("input");
       const sendBtn = document.getElementById("sendBtn");
-      const nickBadge = document.getElementById("nickBadge");
-      const titleText = document.getElementById("titleText");
       const toBottomBtn = document.getElementById("toBottom");
-
-      const overlay = document.getElementById("nickOverlay");
-      const nickInput = document.getElementById("nickInput");
-      const nickConfirm = document.getElementById("nickConfirm");
-      const nickAvatar = document.getElementById("nickAvatar");
-      const regenAvatarBtn = document.getElementById("regenAvatar");
+      const botNameEl = document.getElementById("botName");
 
       // ====== Helpers ======
-      const seed = () => Math.random().toString(16).slice(2, 7);
-
-      function uuid() {
-        if (crypto?.randomUUID) return crypto.randomUUID();
-        return (
-          "id-" +
-          Math.random().toString(16).slice(2) +
-          "-" +
-          Date.now().toString(16)
-        );
-      }
-
-      function hashString(str) {
-        // simple stable hash
-        let h = 2166136261;
-        for (let i = 0; i < str.length; i++) {
-          h ^= str.charCodeAt(i);
-          h = Math.imul(h, 16777619);
-        }
-        return h >>> 0;
-      }
-
       function setWsState(ok, text) {
         wsLed.classList.toggle("ok", ok);
         wsLed.classList.toggle("bad", !ok);
@@ -628,7 +358,7 @@
       }
 
       function escapeHtml(s) {
-        return s.replace(
+        return (s ?? "").toString().replace(
           /[&<>"']/g,
           (m) =>
             ({
@@ -674,13 +404,6 @@
         inputEl.focus();
       });
 
-      // ====== Avatar resolution (per nick) ======
-      function avatarForNick(nick) {
-        const idx = hashString(nick) % avatarSvgs.length;
-        return avatarSvgs[idx](hashString(nick).toString(16).slice(0, 5));
-      }
-
-      // ====== Renderers ======
       function addSystem(text) {
         const row = document.createElement("div");
         row.className = "sysRow";
@@ -690,16 +413,12 @@
         updateToBottomButton();
       }
 
-      function addChat({ text, nick, me }) {
+      function addBubble({ text, who }) {
         const time = nowTime();
         const safe = escapeHtml(text);
 
         const row = document.createElement("div");
-        row.className = "msgRow" + (me ? " me" : "");
-
-        const avatarWrap = document.createElement("div");
-        avatarWrap.className = "avatarWrap";
-        avatarWrap.innerHTML = me ? "" : avatarForNick(nick || "상대");
+        row.className = "row" + (who === "me" ? " me" : "");
 
         const content = document.createElement("div");
         content.className = "content";
@@ -708,76 +427,26 @@
         bubble.className = "bubble";
         bubble.innerHTML = safe;
 
-        if (me) {
-          const tiny = document.createElement("div");
-          tiny.className = "metaLine";
-          tiny.style.justifyContent = "flex-end";
-          tiny.innerHTML = `<span style="font-weight:900; color: rgba(45,91,255,.75);">${escapeHtml(
-            nick || "나"
-          )}</span><span>·</span><span>${time}</span>`;
+        const meta = document.createElement("div");
+        meta.className = "metaLine";
+        if (who === "me") {
+          meta.style.justifyContent = "flex-end";
+          meta.innerHTML = `<span style="font-weight:900; color: rgba(45,91,255,.75);">나</span><span>·</span><span>${time}</span>`;
           content.appendChild(bubble);
-          content.appendChild(tiny);
+          content.appendChild(meta);
         } else {
-          const meta = document.createElement("div");
-          meta.className = "metaLine";
           meta.innerHTML = `<span style="font-weight:900; color: var(--text); letter-spacing:-.02em;">${escapeHtml(
-            nick || "상대"
+            botNameEl.textContent || "봇"
           )}</span><span>·</span><span>${time}</span>`;
           content.appendChild(meta);
           content.appendChild(bubble);
         }
 
-        if (!me) row.appendChild(avatarWrap);
         row.appendChild(content);
-
         messagesEl.appendChild(row);
         scrollToBottom(false);
         updateToBottomButton();
       }
-
-      // ====== IME(한글 조합) ======
-      let composing = false;
-      inputEl.addEventListener("compositionstart", () => {
-        composing = true;
-      });
-      inputEl.addEventListener("compositionend", () => {
-        composing = false;
-      });
-
-      // 디바운스(엔터 튐 방지)
-      let lastSendAttempt = { at: 0 };
-      const SEND_DEBOUNCE_MS = 200;
-
-      // textarea auto-grow
-      inputEl.addEventListener("input", () => {
-        inputEl.style.height = "auto";
-        inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
-      });
-
-      // ====== Identity ======
-      function getMyNick() {
-        return (localStorage.getItem(myNickKey) || "").trim();
-      }
-
-      function getOrCreateClientId() {
-        let id = localStorage.getItem(myClientIdKey);
-        if (!id) {
-          id = uuid();
-          localStorage.setItem(myClientIdKey, id);
-        }
-        return id;
-      }
-      const myClientId = getOrCreateClientId();
-
-      // ====== WebSocket + Protocol ======
-      // message format (stringified JSON)
-      // { v:1, type:"join"|"chat", nick, clientId, msgId, text, ts }
-      const scheme = location.protocol === "https:" ? "wss" : "ws";
-      const wsUrl = `${scheme}://${location.host}/`;
-      let ws;
-
-      // pending by msgId (완전 정확)
-      const pendingMine = new Set();
 
       function safeParse(raw) {
         try {
@@ -787,11 +456,25 @@
         }
       }
 
-      function sendPayload(payload) {
-        if (!ws || ws.readyState !== WebSocket.OPEN) return false;
-        ws.send(JSON.stringify(payload));
-        return true;
-      }
+      // ====== IME(한글 조합) ======
+      let composing = false;
+      inputEl.addEventListener("compositionstart", () => (composing = true));
+      inputEl.addEventListener("compositionend", () => (composing = false));
+
+      // Enter 튐 방지
+      let lastSendAt = 0;
+      const SEND_DEBOUNCE_MS = 200;
+
+      // textarea auto-grow
+      inputEl.addEventListener("input", () => {
+        inputEl.style.height = "auto";
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
+      });
+
+      // ====== WebSocket ======
+      const scheme = location.protocol === "https:" ? "wss" : "ws";
+      const wsUrl = `${scheme}://${location.host}/ws`;
+      let ws;
 
       function connect() {
         setWsState(false, "연결 중…");
@@ -799,75 +482,48 @@
 
         ws.onopen = () => {
           setWsState(true, "연결됨");
-
-          const nick = getMyNick();
-          // 카톡식 입장 메시지
-          sendPayload({
-            v: 1,
-            type: "join",
-            nick,
-            clientId: myClientId,
-            msgId: uuid(),
-            ts: Date.now(),
-          });
+          addSystem("AI 챗봇에 연결되었습니다.");
         };
 
-        ws.onclose = () => setWsState(false, "연결 끊김");
-        ws.onerror = () => setWsState(false, "연결 오류");
+        ws.onclose = () => {
+          setWsState(false, "연결 끊김");
+          addSystem("연결이 끊겼습니다. 새로고침하거나 서버를 확인하세요.");
+        };
+
+        ws.onerror = () => {
+          setWsState(false, "연결 오류");
+          addSystem("연결 오류가 발생했습니다.");
+        };
 
         ws.onmessage = (ev) => {
           const raw = (ev.data ?? "").toString();
           const msg = safeParse(raw);
 
-          // 구버전(plain text)도 fallback
-          if (!msg || !msg.type) {
-            // sender 구분 불가 -> 그냥 "상대"로 표시
-            addChat({ text: raw, nick: "상대", me: false });
+          if (!msg || typeof msg !== "object") {
+            // 예외적으로 문자열이 오면 시스템으로 처리
+            addSystem(raw);
             return;
           }
 
-          const isMe = msg.clientId && msg.clientId === myClientId;
-          if (msg.type === "join") {
-            // 내 입장 알림도 보여주되, 원하면 여기서 isMe면 숨겨도 됨
-            addSystem(`(${msg.nick || "익명"})님이 입장했습니다`);
+          if (msg.type === "typing") {
+            addSystem(msg.message || "봇이 입력 중입니다…");
             return;
           }
 
-          if (msg.type === "chat") {
-            // 내가 보낸 건 msgId로 확정
-            if (isMe && msg.msgId && pendingMine.has(msg.msgId)) {
-              pendingMine.delete(msg.msgId);
-              addChat({
-                text: msg.text || "",
-                nick: msg.nick || getMyNick(),
-                me: true,
-              });
-              return;
-            }
-
-            // 내가 보냈는데 pending에 없으면(새로고침 직후 등) 그냥 me로도 처리 가능
-            if (isMe) {
-              addChat({
-                text: msg.text || "",
-                nick: msg.nick || getMyNick(),
-                me: true,
-              });
-              return;
-            }
-
-            addChat({
-              text: msg.text || "",
-              nick: msg.nick || "상대",
-              me: false,
-            });
+          if (msg.type === "error") {
+            addSystem(msg.message || "오류가 발생했습니다.");
             return;
           }
 
-          // 알 수 없는 타입은 무시/표시
-          addChat({ text: raw, nick: "상대", me: false });
+          if (msg.type === "message" && msg.role === "assistant") {
+            addBubble({ text: msg.message || "", who: "bot" });
+            return;
+          }
+
+          // 예상 외 메시지는 시스템으로 표시
+          addSystem(raw);
         };
 
-        // 첫 연결 후 아래로
         setTimeout(() => {
           messagesEl.scrollTop = messagesEl.scrollHeight;
           updateToBottomButton();
@@ -876,27 +532,20 @@
 
       function sendChat() {
         if (composing) return;
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
         const text = (inputEl.value || "").trim();
         if (!text) return;
-        if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
         const now = Date.now();
-        if (now - lastSendAttempt.at < SEND_DEBOUNCE_MS) return;
-        lastSendAttempt = { at: now };
+        if (now - lastSendAt < SEND_DEBOUNCE_MS) return;
+        lastSendAt = now;
 
-        const msgId = uuid();
-        pendingMine.add(msgId);
+        // 내 말풍선 먼저 출력(UX)
+        addBubble({ text, who: "me" });
 
-        sendPayload({
-          v: 1,
-          type: "chat",
-          nick: getMyNick(),
-          clientId: myClientId,
-          msgId,
-          text,
-          ts: now,
-        });
+        // 서버 프로토콜: {"message": "..."}
+        ws.send(JSON.stringify({ message: text }));
 
         inputEl.value = "";
         inputEl.style.height = "auto";
@@ -904,64 +553,16 @@
       }
 
       sendBtn.addEventListener("click", sendChat);
-
       inputEl.addEventListener("keydown", (e) => {
-        // 한글 조합중 Enter는 확정용 -> 전송 금지
         if (e.isComposing || composing || e.keyCode === 229) return;
-
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           sendChat();
         }
       });
 
-      // ====== Nickname overlay ======
-      let myAvatarIdx = Number(localStorage.getItem(myAvatarKey));
-      if (Number.isNaN(myAvatarIdx))
-        myAvatarIdx = Math.floor(Math.random() * avatarSvgs.length);
-
-      function renderNickAvatar() {
-        nickAvatar.innerHTML = avatarSvgs[myAvatarIdx](seed());
-      }
-      renderNickAvatar();
-
-      regenAvatarBtn.addEventListener("click", () => {
-        myAvatarIdx = Math.floor(Math.random() * avatarSvgs.length);
-        localStorage.setItem(myAvatarKey, String(myAvatarIdx));
-        renderNickAvatar();
-      });
-
-      function ensureNickname() {
-        const saved = getMyNick();
-        if (saved) {
-          overlay.style.display = "none";
-          nickBadge.textContent = saved;
-          titleText.textContent = "실시간 채팅";
-          connect();
-        } else {
-          overlay.style.display = "flex";
-          nickInput.value = "";
-          nickInput.focus();
-          nickBadge.textContent = "-";
-          setWsState(false, "닉네임 필요");
-        }
-      }
-
-      nickConfirm.addEventListener("click", () => {
-        const val = nickInput.value.trim();
-        if (!val) return;
-        localStorage.setItem(myNickKey, val);
-        overlay.style.display = "none";
-        nickBadge.textContent = val;
-        connect();
-      });
-
-      nickInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") nickConfirm.click();
-      });
-
       // start
-      ensureNickname();
+      connect();
     </script>
   </body>
 </html>
