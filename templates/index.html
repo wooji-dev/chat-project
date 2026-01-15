@@ -559,6 +559,11 @@
               addSystem(msg.message || "오류");
               return;
             }
+            if (msg.type === "greeting") {
+              // ✅ 처음 접속 인사는 그대로 봇 말풍선
+              addBubble({ text: msg.message, who: "bot" });
+              return;
+            }
             if (msg.type === "message") {
               // msg.message는 "봇 API 응답 원문(text)"이 온다
               const answerOnly = extractAnswerOnly(msg.message || "");

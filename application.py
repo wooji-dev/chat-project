@@ -79,18 +79,17 @@ async def call_bot_api_raw(user_text: str) -> str:
 async def ws_chatbot(websocket: WebSocket):
     await websocket.accept()
 
-    # 연결 안내
+    # ✅ 최초 접속 인사 (사람이 읽는 텍스트만)
     await websocket.send_text(
         json.dumps(
             {
-                "type": "message",
+                "type": "greeting",
                 "role": "assistant",
-                "message": json.dumps(
-                    {
-                        "info": f"{BOT_NAME} 연결 완료",
-                        "note": "봇 API 응답은 원문 JSON 문자열 그대로 전달됩니다.",
-                    },
-                    ensure_ascii=False,
+                "message": (
+                    "안녕하세요 😊\n"
+                    "신한투자증권 프로봇입니다.\n\n"
+                    "클라우드, 개발, 기술 관련 질문이 있다면\n"
+                    "편하게 물어보세요!"
                 ),
             },
             ensure_ascii=False,
