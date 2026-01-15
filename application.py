@@ -55,7 +55,7 @@ async def chatroom_ws_sender(websocket, channel_name):
             )
             params = {"m": json.loads(event.message)['message']}
             async with aiohttp.ClientSession() as session:
-                async with session.get("https://2lc3zydxt0.execute-api.ap-northeast-2.amazonaws.com/default/test-01", params=params) as resp:
+                async with session.get("https://bm0l8cj2xl.execute-api.ap-northeast-2.amazonaws.com/default/llm-lamda", params=params) as resp:
                     r = await resp.json()
             bot_message = r['choices'][0]['message']['content']
             bot_message = json.dumps(bot_message, ensure_ascii=False)
