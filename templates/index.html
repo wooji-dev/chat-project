@@ -487,6 +487,29 @@
         return JSON.stringify(clone, null, 2);
       }
 
+      function extractAnswerOnly(rawText) {
+        const outer = safeParse(rawText);
+        if (!outer || typeof outer !== "object") {
+          return rawText; // JSON 아니면 그대로
+        }
+
+        // 1️⃣ bodyParsed.answer 우선
+        if (outer.bodyParsed && typeof outer.bodyParsed.answer === "string") {
+          return outer.bodyParsed.answer;
+        }
+
+        // 2️⃣ body가 JSON 문자열인 경우
+        if (typeof outer.body === "string") {
+          const inner = safeParse(outer.body);
+          if (inner && typeof inner.answer === "string") {
+            return inner.answer;
+          }
+        }
+
+        // 3️⃣ 그래도 없으면 전체를 문자열로
+        return rawText;
+      }
+
       // ====== IME ======
       let composing = false;
       inputEl.addEventListener("compositionstart", () => (composing = true));
@@ -538,8 +561,8 @@
             }
             if (msg.type === "message") {
               // msg.message는 "봇 API 응답 원문(text)"이 온다
-              const normalized = normalizeRawBotResponse(msg.message || "");
-              addBubble({ text: normalized, who: "bot" });
+              const answerOnly = extractAnswerOnly(msg.message || "");
+              addBubble({ text: answerOnly, who: "bot" });
               return;
             }
           }
