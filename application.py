@@ -1,3 +1,4 @@
+import json
 from broadcaster import Broadcast
 from starlette.applications import Starlette
 from starlette.concurrency import run_until_first_complete
@@ -7,6 +8,9 @@ from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+import requests
+import aiohttp
+import asyncio
 
 
 load_dotenv()  # Load .env variables
@@ -45,6 +49,18 @@ async def chatroom_ws_sender(websocket, channel_name):
         async for event in subscriber:
             await websocket.send_text(
                 event.message
+            )
+            await websocket.send_text(
+                '{"action":"message","user":"안내사항","message":"봇이 입력 중입니다"}'
+            )
+            params = {"m": json.loads(event.message)['message']}
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://2lc3zydxt0.execute-api.ap-northeast-2.amazonaws.com/default/test-01", params=params) as resp:
+                    r = await resp.json()
+            bot_message = r['choices'][0]['message']['content']
+            bot_message = json.dumps(bot_message, ensure_ascii=False)
+            await websocket.send_text(
+                f'{{"action":"message","user":"신한투자증권 프로봇","message":{bot_message}}}'
             )
 
 
